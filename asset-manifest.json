@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/zx-docgen/static/css/main.e6c13ad2.css",
+    "main.js": "/zx-docgen/static/js/main.910d2681.js",
+    "static/js/787.8ca9a3b4.chunk.js": "/zx-docgen/static/js/787.8ca9a3b4.chunk.js",
+    "index.html": "/zx-docgen/index.html",
+    "main.e6c13ad2.css.map": "/zx-docgen/static/css/main.e6c13ad2.css.map",
+    "main.910d2681.js.map": "/zx-docgen/static/js/main.910d2681.js.map",
+    "787.8ca9a3b4.chunk.js.map": "/zx-docgen/static/js/787.8ca9a3b4.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.910d2681.js"
+  ]
+}
