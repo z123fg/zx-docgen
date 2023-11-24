@@ -1,4 +1,4 @@
-import React, { MouseEvent, Reducer, useState, useMemo } from "react";
+import React, { MouseEvent, Reducer, useState, useMemo, Fragment } from "react";
 import { TreeView } from "@mui/x-tree-view/TreeView";
 import {
     TreeItem,
@@ -11,10 +11,6 @@ import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import { alpha, styled } from "@mui/material/styles";
 
 const Outline = () => {
-    const [contextMenu, setContextMenu] = useState<{
-        x: number;
-        y: number;
-    } | null>(null);
     const [selected, setSelected] = useState<string | null>("");
     const [expanded, setExpanded] = React.useState<string[]>([]);
     const allNodeIds = useMemo<string[]>(() => {
@@ -29,24 +25,6 @@ const Outline = () => {
         return result;
     }, [data]);
 
-    const handleContextMenu = (e: MouseEvent, nodes: RenderTree) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setSelected(nodes.ID);
-        if (!(e.target as Element).classList.contains("MuiTreeItem-label"))
-            return;
-        setContextMenu(
-            contextMenu === null
-                ? {
-                      x: e.clientX + 2,
-                      y: e.clientY - 6,
-                  }
-                : null
-        );
-    };
-    const handleClose = () => {
-        setContextMenu(null);
-    };
     const handleToggle = (event: React.SyntheticEvent, nodeIds: string[]) => {
         setExpanded(nodeIds);
     };
@@ -57,35 +35,22 @@ const Outline = () => {
     };
     const handleSelect = (event: React.SyntheticEvent, nodeIds: string) => {
         setSelected(nodeIds);
-      };
-    
-    const renderTree = (nodes: RenderTree) => (
-        <StyledTreeItem
-            onContextMenu={(e) => handleContextMenu(e, nodes)}
-            key={nodes.ID}
-            nodeId={String(nodes.ID)}
-            label={nodes.bullet_point}
-        >
-            <Menu
-                open={contextMenu !== null}
-                onClose={handleClose}
-                anchorReference="anchorPosition"
-                anchorPosition={
-                    contextMenu !== null
-                        ? { top: contextMenu.y, left: contextMenu.x }
-                        : undefined
-                }
+    };
+    const renderTree = (nodes: RenderTree) => {
+        return (
+            <StyledTreeItem
+                key={nodes.ID}
+                nodeId={String(nodes.ID)}
+                label={nodes.bullet_point}
+                node={nodes}
+                handleSelect={handleSelect}
             >
-                <MenuItem onClick={handleClose}>Copy</MenuItem>
-                <MenuItem onClick={handleClose}>Print</MenuItem>
-                <MenuItem onClick={handleClose}>Highlight</MenuItem>
-                <MenuItem onClick={handleClose}>Email</MenuItem>
-            </Menu>
-            {Array.isArray(nodes.children)
-                ? nodes.children.map((node) => renderTree(node))
-                : null}
-        </StyledTreeItem>
-    );
+                {Array.isArray(nodes.children)
+                    ? nodes.children.map((node) => renderTree(node))
+                    : null}
+            </StyledTreeItem>
+        );
+    };
 
     return (
         <Box minWidth={"300px"} padding={"10px"}>
@@ -103,17 +68,65 @@ const Outline = () => {
                 expanded={expanded}
                 onNodeToggle={handleToggle}
                 onNodeSelect={handleSelect}
-
             >
                 {renderTree(data)}
             </TreeView>
         </Box>
     );
 };
+
 const CustomTreeItem = React.forwardRef(
-    (props: TreeItemProps, ref: React.Ref<HTMLLIElement>) => (
-        <TreeItem {...props} ref={ref} />
-    )
+    (
+        props: TreeItemProps & { node: RenderTree } & {
+            handleSelect: Function;
+        },
+        ref: React.Ref<HTMLLIElement>
+    ) => {
+        const [contextMenu, setContextMenu] = useState<{
+            x: number;
+            y: number;
+        } | null>(null);
+        const handleContextMenu = (event: React.MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setContextMenu(
+                contextMenu === null
+                    ? {
+                          x: event.clientX + 2,
+                          y: event.clientY - 6,
+                      }
+                    : null
+            );
+            props.handleSelect(undefined, props.node.ID);
+        };
+        const handleClose = (e: any) => {
+            setContextMenu(null);
+        };
+        return (
+            <div onContextMenu={handleContextMenu}>
+                <TreeItem {...props} ref={ref} />
+                <Menu
+                    open={contextMenu !== null}
+                    onClose={handleClose}
+                    anchorReference="anchorPosition"
+                    anchorPosition={
+                        contextMenu !== null
+                            ? {
+                                  top: contextMenu.y,
+                                  left: contextMenu.x,
+                              }
+                            : undefined
+                    }
+                >
+                    {props.node.cmd.map((item) => (
+                        <MenuItem onClick={handleClose}>
+                            {item.show_name}
+                        </MenuItem>
+                    ))}
+                </Menu>
+            </div>
+        );
+    }
 );
 
 const StyledTreeItem = styled(CustomTreeItem)(({ theme }) => ({
