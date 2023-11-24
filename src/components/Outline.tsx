@@ -1,4 +1,4 @@
-import React, { MouseEvent, Reducer, useState, useMemo } from "react";
+import React, { MouseEvent, Reducer, useState, useMemo, Fragment } from "react";
 import { TreeView } from "@mui/x-tree-view/TreeView";
 import {
     TreeItem,
@@ -9,7 +9,6 @@ import { ChevronRight, ExpandMore } from "@mui/icons-material";
 import { RenderTree, data } from "../mock/example_001";
 import { Box, Button, Menu, MenuItem, Typography } from "@mui/material";
 import { alpha, styled } from "@mui/material/styles";
-
 
 const Outline = () => {
     const [selected, setSelected] = useState<string | null>("");
@@ -26,7 +25,6 @@ const Outline = () => {
         return result;
     }, [data]);
 
-  
     const handleToggle = (event: React.SyntheticEvent, nodeIds: string[]) => {
         setExpanded(nodeIds);
     };
@@ -44,6 +42,8 @@ const Outline = () => {
                 key={nodes.ID}
                 nodeId={String(nodes.ID)}
                 label={nodes.bullet_point}
+                node={nodes}
+                handleSelect={handleSelect}
             >
                 {Array.isArray(nodes.children)
                     ? nodes.children.map((node) => renderTree(node))
@@ -75,11 +75,58 @@ const Outline = () => {
     );
 };
 
-
 const CustomTreeItem = React.forwardRef(
-    (props: TreeItemProps, ref: React.Ref<HTMLLIElement>) => (
-        <TreeItem {...props} ref={ref} />
-    )
+    (
+        props: TreeItemProps & { node: RenderTree } & {
+            handleSelect: Function;
+        },
+        ref: React.Ref<HTMLLIElement>
+    ) => {
+        const [contextMenu, setContextMenu] = useState<{
+            x: number;
+            y: number;
+        } | null>(null);
+        const handleContextMenu = (event: React.MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setContextMenu(
+                contextMenu === null
+                    ? {
+                          x: event.clientX + 2,
+                          y: event.clientY - 6,
+                      }
+                    : null
+            );
+            props.handleSelect(undefined, props.node.ID);
+        };
+        const handleClose = (e: any) => {
+            setContextMenu(null);
+        };
+        return (
+            <div onContextMenu={handleContextMenu}>
+                <TreeItem {...props} ref={ref} />
+                <Menu
+                    open={contextMenu !== null}
+                    onClose={handleClose}
+                    anchorReference="anchorPosition"
+                    anchorPosition={
+                        contextMenu !== null
+                            ? {
+                                  top: contextMenu.y,
+                                  left: contextMenu.x,
+                              }
+                            : undefined
+                    }
+                >
+                    {props.node.cmd.map((item) => (
+                        <MenuItem onClick={handleClose}>
+                            {item.show_name}
+                        </MenuItem>
+                    ))}
+                </Menu>
+            </div>
+        );
+    }
 );
 
 const StyledTreeItem = styled(CustomTreeItem)(({ theme }) => ({
