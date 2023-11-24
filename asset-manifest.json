@@ -1,12 +1,12 @@
 {
   "files": {
     "main.css": "/zx-docgen/static/css/main.4efb37a3.css",
-    "main.js": "/zx-docgen/static/js/main.3b2cfb15.js",
+    "main.js": "/zx-docgen/static/js/main.d586ef3a.js",
     "static/js/27.2c464d46.chunk.js": "/zx-docgen/static/js/27.2c464d46.chunk.js",
     "index.html": "/zx-docgen/index.html"
   },
   "entrypoints": [
     "static/css/main.4efb37a3.css",
-    "static/js/main.3b2cfb15.js"
+    "static/js/main.d586ef3a.js"
   ]
 }
